@@ -6,7 +6,7 @@ spring:
       enabled: false
       path: /h2-console
   datasource:
-    url: jdbc:h2:mem:demo_test
+    url: jdbc:h2:mem:demo_test;DB_CLOSE_ON_EXIT=FALSE
     # org.h2.Driver
     # com.mysql.cj.jdbc.Driver
     driver-class-name: org.h2.Driver
@@ -21,10 +21,11 @@ spring:
         show_sql: true
         format_sql: true
         use_sql_comments: true
-        dialect: org.hibernate.dialect.H2Dialect
+        # dialect: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: create
-    database-platform: org.hibernate.dialect.H2Dialect
+    # database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: false
 logging:
   level:
     root: info
@@ -36,3 +37,7 @@ logging:
     # org.hibernate.orm.jdbc.extract: trace
     # org.springframework.transaction.interceptor: trace
     # org.hibernate.engine.query.spi.HQLQueryPlan: debug
+external:
+  api:
+    host: csrng.net
+    path: /csrng/csrng.php
