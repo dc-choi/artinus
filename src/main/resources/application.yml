@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: artinus
+  h2:
+    console:
+      enabled: false
+      path: /h2-console
+  datasource:
+    url: jdbc:h2:mem:demo_test
+    # org.h2.Driver
+    # com.mysql.cj.jdbc.Driver
+    driver-class-name: org.h2.Driver
+    username: root
+    password: 1234
+  jpa:
+    properties:
+      hibernate:
+        # org.hibernate.dialect.H2Dialect
+        # org.hibernate.dialect.MySQLDialect
+        default_batch_fetch_size: 100
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+        dialect: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create
+    database-platform: org.hibernate.dialect.H2Dialect
+logging:
+  level:
+    root: info
+    com.server.chucked: info
+    org.springframework.web: debug
+    org.hibernate.SQL: debug
+    # org.hibernate.type: debug
+    org.hibernate.orm.jdbc.bind: trace
+    # org.hibernate.orm.jdbc.extract: trace
+    # org.springframework.transaction.interceptor: trace
+    # org.hibernate.engine.query.spi.HQLQueryPlan: debug
