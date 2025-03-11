@@ -15,18 +15,18 @@ import java.util.List;
 public class ExternalService {
     private final RestClient restClient = RestClient.create();
 
-    @Value("${external.api.host}")
-    private String apiHost;
+    @Value("${external.random.host}")
+    private String randomApiHost;
 
-    @Value("${external.api.path}")
-    private String apiPath;
+    @Value("${external.random.path}")
+    private String randomApiPath;
 
     public List<GetRandomResponse> getRandom() {
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .scheme("https")
-                        .host(apiHost)
-                        .path(apiPath)
+                        .host(randomApiHost)
+                        .path(randomApiPath)
                         .queryParam("min", 0)
                         .queryParam("max", 1)
                         .build())

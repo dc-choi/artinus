@@ -38,6 +38,6 @@ logging:
     # org.springframework.transaction.interceptor: trace
     # org.hibernate.engine.query.spi.HQLQueryPlan: debug
 external:
-  api:
+  random:
     host: csrng.net
     path: /csrng/csrng.php
