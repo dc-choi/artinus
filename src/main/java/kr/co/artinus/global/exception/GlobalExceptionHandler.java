@@ -1,6 +1,8 @@
 package kr.co.artinus.global.exception;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
 import kr.co.artinus.global.common.message.FailHttpMessage;
 import kr.co.artinus.global.common.response.ErrorResponse;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -34,7 +37,14 @@ public class GlobalExceptionHandler {
     /**
      * Validation 관련 Exception Handler
      */
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({
+            MethodArgumentNotValidException.class,
+            ConstraintViolationException.class,
+            NumberFormatException.class,
+            MethodArgumentTypeMismatchException.class,
+            InvalidFormatException.class,
+            IllegalArgumentException.class
+    })
     public ResponseEntity<ErrorResponse> handleBindException(MethodArgumentNotValidException e, HttpServletRequest request) {
         StringBuilder message = new StringBuilder();
 

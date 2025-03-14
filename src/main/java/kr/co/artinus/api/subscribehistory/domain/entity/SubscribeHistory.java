@@ -45,4 +45,19 @@ public class SubscribeHistory extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subscribe_id", columnDefinition = "BIGINT", foreignKey = @ForeignKey(name = "fk_subscribe_history_subscribe"))
     private Subscribe subscribe;
+
+    public void addChannel(Channel channel) {
+        this.channel = channel;
+        channel.getSubscribeHistories().add(this);
+    }
+
+    public void addMember(Member member) {
+        this.member = member;
+        member.getSubscribeHistories().add(this);
+    }
+
+    public void addSubscribe(Subscribe subscribe) {
+        this.subscribe = subscribe;
+        subscribe.getSubscribeHistories().add(this);
+    }
 }
