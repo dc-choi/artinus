@@ -1,10 +1,9 @@
 package kr.co.artinus.api.subscribe.application;
 
 import kr.co.artinus.api.channel.domain.entity.Channel;
-import kr.co.artinus.api.channel.domain.enumerated.ChannelRole;
-import kr.co.artinus.api.channel.domain.persistence.ChannelRepository;
+import kr.co.artinus.api.channel.domain.validator.ChannelValidator;
 import kr.co.artinus.api.member.domain.entity.Member;
-import kr.co.artinus.api.member.domain.persistence.MemberRepository;
+import kr.co.artinus.api.member.domain.validator.MemberValidator;
 import kr.co.artinus.api.subscribe.domain.dto.SubscribeDto;
 import kr.co.artinus.api.subscribe.domain.entity.Subscribe;
 import kr.co.artinus.api.subscribe.domain.persistence.SubscribeRepository;
@@ -19,35 +18,26 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class SubscribeService {
     private final SubscribeRepository subscribeRepository;
-    private final MemberRepository memberRepository;
-    private final ChannelRepository channelRepository;
     private final SubscribeHistoryRepository subscribeHistoryRepository;
     private final ExternalService externalService;
+
+    private final MemberValidator memberValidator;
+    private final ChannelValidator channelValidator;
 
     @Transactional
     public SubscribeDto subscribe(SubscribeDto subscribeDto) {
         // 회원이 존재하는지 확인
-        Member member = memberRepository.findByPhone(subscribeDto.phone())
-                .orElseThrow(() -> new IllegalStateException("해당 번호로 가입한 회원이 존재하지 않습니다."));
+        Member member = memberValidator.validByPhone(subscribeDto.phone());
 
-        Channel channel = channelRepository.findById(subscribeDto.channelId())
-                .map(existingChannel -> {
-                    // 채널 권한이 EVERY, SUBSCRIBE면 구독 가능
-                    if (existingChannel.getRole() != ChannelRole.EVERY && existingChannel.getRole() != ChannelRole.SUBSCRIBE) {
-                        throw new IllegalStateException("채널의 권한이 없는 접근입니다.");
-                    }
-
-                    return existingChannel;
-                })
-                // 채널이 없으면 예외 발생
-                .orElseThrow(() -> new IllegalStateException("해당 채널이 존재하지 않습니다."));
+        // 채널이 존재하는지 확인하고 권한 체크
+        Channel channel = channelValidator.validById(subscribeDto.channelId());
+        channel.checkRole(HistoryType.SUBSCRIBE);
 
         Subscribe subscribe = subscribeRepository.findByMember(member)
                 // 구독 정보가 존재하는 경우 구독 타입을 변경함.
@@ -64,21 +54,11 @@ public class SubscribeService {
                 );
         subscribeRepository.save(subscribe);
 
-        SubscribeHistory subscribeHistory = SubscribeHistory.builder()
-                .type(HistoryType.SUBSCRIBE)
-                .changedAt(LocalDateTime.now())
-                .member(member)
-                .channel(channel)
-                .subscribe(subscribe)
-                .build();
-
-        subscribeHistory.addChannel(channel);
-        subscribeHistory.addMember(member);
-        subscribeHistory.addSubscribe(subscribe);
-
         // 구독 이력 저장
+        SubscribeHistory subscribeHistory = SubscribeHistory.create(HistoryType.CANCEL, member, channel, subscribe);
         subscribeHistoryRepository.save(subscribeHistory);
 
+        // random 값이 0이 나오는 경우 서버 에러로 간주
         List<GetRandomResponse> random = externalService.getRandom();
         if (random.isEmpty()) throw new BusinessException(FailHttpMessage.INTERNAL_SERVER_ERROR);
         if (random.getFirst().random() == 0) throw new BusinessException(FailHttpMessage.INTERNAL_SERVER_ERROR);
@@ -89,47 +69,23 @@ public class SubscribeService {
     @Transactional
     public SubscribeDto unsubscribe(SubscribeDto subscribeDto) {
         // 회원이 존재하는지 확인
-        Member member = memberRepository.findByPhone(subscribeDto.phone())
-                .orElseThrow(() -> new IllegalStateException("해당 번호로 가입한 회원이 존재하지 않습니다."));
+        Member member = memberValidator.validByPhone(subscribeDto.phone());
 
-        Channel channel = channelRepository.findById(subscribeDto.channelId())
-                .map(existingChannel -> {
-                    // 채널 권한이 EVERY, CANCEL이면 구독 해지 가능
-                    if (existingChannel.getRole() != ChannelRole.EVERY && existingChannel.getRole() != ChannelRole.CANCEL) {
-                        throw new IllegalStateException("채널의 권한이 없는 접근입니다.");
-                    }
+        // 채널이 존재하는지 확인하고 권한 체크
+        Channel channel = channelValidator.validById(subscribeDto.channelId());
+        channel.checkRole(HistoryType.CANCEL);
 
-                    return existingChannel;
-                })
-                // 채널이 없으면 예외 발생
-                .orElseThrow(() -> new IllegalStateException("해당 채널이 존재하지 않습니다."));
-
+        // 구독 정보가 존재하지 않는 경우 예외 발생하고 존재하는 경우 구독 타입을 변경함.
         Subscribe subscribe = subscribeRepository.findByMember(member)
-                // 구독 정보가 존재하는 경우 구독 타입을 변경함.
-                .map(existingSubscribe -> {
-                    existingSubscribe.modifySubscribeType(subscribeDto.subscribeType(), HistoryType.CANCEL);
-
-                    return existingSubscribe;
-                })
-                // 구독 정보가 존재하지 않는 경우 예외 발생
                 .orElseThrow(() -> new IllegalStateException("구독 정보가 존재하지 않습니다."));
+        subscribe.modifySubscribeType(subscribeDto.subscribeType(), HistoryType.CANCEL);
         subscribeRepository.save(subscribe);
 
-        SubscribeHistory subscribeHistory = SubscribeHistory.builder()
-                .type(HistoryType.CANCEL)
-                .changedAt(LocalDateTime.now())
-                .member(member)
-                .channel(channel)
-                .subscribe(subscribe)
-                .build();
-
-        subscribeHistory.addChannel(channel);
-        subscribeHistory.addMember(member);
-        subscribeHistory.addSubscribe(subscribe);
-
         // 구독 이력 저장
+        SubscribeHistory subscribeHistory = SubscribeHistory.create(HistoryType.CANCEL, member, channel, subscribe);
         subscribeHistoryRepository.save(subscribeHistory);
 
+        // random 값이 0이 나오는 경우 서버 에러로 간주
         List<GetRandomResponse> random = externalService.getRandom();
         if (random.isEmpty()) throw new BusinessException(FailHttpMessage.INTERNAL_SERVER_ERROR);
         if (random.getFirst().random() == 0) throw new BusinessException(FailHttpMessage.INTERNAL_SERVER_ERROR);

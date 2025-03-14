@@ -34,7 +34,6 @@ public class ExternalService {
                 .onStatus(HttpStatusCode::isError, (req, res) -> {
                     throw new BusinessException(FailHttpMessage.INTERNAL_SERVER_ERROR);
                 })
-                .body(new ParameterizedTypeReference<List<GetRandomResponse>>() {
-                });
+                .body(new ParameterizedTypeReference<List<GetRandomResponse>>() {});
     }
 }

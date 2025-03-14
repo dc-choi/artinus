@@ -6,10 +6,7 @@ import kr.co.artinus.api.member.domain.entity.Member;
 import kr.co.artinus.api.subscribe.domain.entity.Subscribe;
 import kr.co.artinus.api.subscribehistory.domain.enumerated.HistoryType;
 import kr.co.artinus.global.common.entity.BaseEntity;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
 
@@ -59,5 +56,21 @@ public class SubscribeHistory extends BaseEntity {
     public void addSubscribe(Subscribe subscribe) {
         this.subscribe = subscribe;
         subscribe.getSubscribeHistories().add(this);
+    }
+
+    public static SubscribeHistory create(HistoryType historyType, Member member, Channel channel, Subscribe subscribe) {
+        SubscribeHistory subscribeHistory = SubscribeHistory.builder()
+                .type(historyType)
+                .changedAt(LocalDateTime.now())
+                .member(member)
+                .channel(channel)
+                .subscribe(subscribe)
+                .build();
+
+        subscribeHistory.addChannel(channel);
+        subscribeHistory.addMember(member);
+        subscribeHistory.addSubscribe(subscribe);
+
+        return subscribeHistory;
     }
 }
