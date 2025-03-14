@@ -33,8 +33,7 @@ public class SubscribeHistoryService {
                         tuple.get(0, Long.class),
                         tuple.get(1, LocalDateTime.class),
                         tuple.get(2, LocalDateTime.class)
-                )
-        ).toList();
+                )).toList();
 
         long count = subscribeHistoryRepository.count();
 

@@ -60,18 +60,14 @@ public class Subscribe extends BaseEntity {
             // 일반 구독 -> 구독 안함
             case CANCEL -> {
                 switch (this.type) {
-                    case NONE -> {
-                        if (subscribeType == SubscribeType.NONE) {
-                            throw new IllegalStateException("구독을 취소할 수 없습니다.");
-                        }
-                    }
+                    case NONE -> throw new IllegalStateException("구독을 취소할 수 없습니다.");
                     case BASIC -> {
                         if (subscribeType != SubscribeType.NONE) {
                             throw new IllegalStateException("구독 등급을 높일 수 없습니다.");
                         }
                     }
                     case PREMIUM -> {
-                        if (subscribeType != SubscribeType.PREMIUM) {
+                        if (subscribeType == SubscribeType.PREMIUM) {
                             throw new IllegalStateException("구독 등급을 높일 수 없습니다.");
                         }
                     }

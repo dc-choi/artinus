@@ -19,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -42,13 +41,13 @@ public class SubscribeService {
                 .map(existingChannel -> {
                     // 채널 권한이 EVERY, SUBSCRIBE면 구독 가능
                     if (existingChannel.getRole() != ChannelRole.EVERY && existingChannel.getRole() != ChannelRole.SUBSCRIBE) {
-                        throw new BusinessException(FailHttpMessage.FORBIDDEN);
+                        throw new IllegalStateException("채널의 권한이 없는 접근입니다.");
                     }
 
                     return existingChannel;
                 })
                 // 채널이 없으면 예외 발생
-                .orElseThrow(() -> new IllegalArgumentException("해당 채널이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalStateException("해당 채널이 존재하지 않습니다."));
 
         Subscribe subscribe = subscribeRepository.findByMember(member)
                 // 구독 정보가 존재하는 경우 구독 타입을 변경함.
@@ -97,7 +96,7 @@ public class SubscribeService {
                 .map(existingChannel -> {
                     // 채널 권한이 EVERY, CANCEL이면 구독 해지 가능
                     if (existingChannel.getRole() != ChannelRole.EVERY && existingChannel.getRole() != ChannelRole.CANCEL) {
-                        throw new BusinessException(FailHttpMessage.FORBIDDEN);
+                        throw new IllegalStateException("채널의 권한이 없는 접근입니다.");
                     }
 
                     return existingChannel;
