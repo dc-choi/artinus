@@ -2,6 +2,8 @@ package kr.co.artinus.api.subscribe.domain.entity;
 
 import kr.co.artinus.api.subscribe.domain.enumerated.SubscribeType;
 import kr.co.artinus.api.subscribehistory.domain.enumerated.HistoryType;
+import kr.co.artinus.global.common.message.FailHttpMessage;
+import kr.co.artinus.global.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -79,8 +81,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.NONE, HistoryType.SUBSCRIBE))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독을 취소할 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -93,8 +95,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.NONE, HistoryType.SUBSCRIBE))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독을 취소할 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -107,8 +109,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.BASIC, HistoryType.SUBSCRIBE))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독 등급을 낮출 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -121,8 +123,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.NONE, HistoryType.SUBSCRIBE))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독 등급을 낮출 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -180,8 +182,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.NONE, HistoryType.CANCEL))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독을 취소할 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -194,8 +196,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.BASIC, HistoryType.CANCEL))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독을 취소할 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -208,8 +210,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.PREMIUM, HistoryType.CANCEL))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독을 취소할 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -222,8 +224,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.PREMIUM, HistoryType.CANCEL))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독 등급을 높일 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -236,8 +238,8 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.BASIC, HistoryType.CANCEL))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독 등급을 높일 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 
     @Test
@@ -250,7 +252,7 @@ class SubscribeTest {
 
         // when & then
         assertThatThrownBy(() -> subscribe.modifySubscribeType(SubscribeType.PREMIUM, HistoryType.CANCEL))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독 등급을 높일 수 없습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.BAD_REQUEST_SUBSCRIBE.getMessage());
     }
 }

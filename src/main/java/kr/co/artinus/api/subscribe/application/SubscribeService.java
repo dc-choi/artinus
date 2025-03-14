@@ -77,7 +77,7 @@ public class SubscribeService {
 
         // 구독 정보가 존재하지 않는 경우 예외 발생하고 존재하는 경우 구독 타입을 변경함.
         Subscribe subscribe = subscribeRepository.findByMember(member)
-                .orElseThrow(() -> new IllegalStateException("구독 정보가 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.NOT_FOUND_SUBSCRIBE));
         subscribe.modifySubscribeType(subscribeDto.subscribeType(), HistoryType.CANCEL);
         subscribeRepository.save(subscribe);
 

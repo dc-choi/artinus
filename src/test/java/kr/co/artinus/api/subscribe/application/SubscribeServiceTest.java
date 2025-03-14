@@ -10,6 +10,7 @@ import kr.co.artinus.api.subscribe.domain.entity.Subscribe;
 import kr.co.artinus.api.subscribe.domain.enumerated.SubscribeType;
 import kr.co.artinus.api.subscribe.domain.persistence.SubscribeRepository;
 import kr.co.artinus.api.subscribehistory.domain.persistence.SubscribeHistoryRepository;
+import kr.co.artinus.global.common.message.FailHttpMessage;
 import kr.co.artinus.global.exception.BusinessException;
 import kr.co.artinus.infra.external.ExternalService;
 import kr.co.artinus.infra.external.dto.GetRandomResponse;
@@ -65,8 +66,8 @@ class SubscribeServiceTest {
 
         // when & then
         assertThatThrownBy(() -> subscribeService.subscribe(subscribeDto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("해당 번호로 가입한 회원이 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.NOT_FOUND_MEMBER.getMessage());
     }
 
     @Test
@@ -78,8 +79,8 @@ class SubscribeServiceTest {
 
         // when & then
         assertThatThrownBy(() -> subscribeService.subscribe(subscribeDto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("해당 채널이 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.INVALID_INPUT_VALUE_CHANNEL.getMessage());
     }
 
     @Test
@@ -95,8 +96,8 @@ class SubscribeServiceTest {
 
         // when & then
         assertThatThrownBy(() -> subscribeService.subscribe(subscribeDto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("채널의 권한이 없는 접근입니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.FORBIDDEN_CHANNEL.getMessage());
     }
 
     @Test
@@ -124,8 +125,8 @@ class SubscribeServiceTest {
 
         // when & then
         assertThatThrownBy(() -> subscribeService.unsubscribe(subscribeDto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("해당 번호로 가입한 회원이 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.NOT_FOUND_MEMBER.getMessage());
     }
 
     @Test
@@ -136,8 +137,8 @@ class SubscribeServiceTest {
         SubscribeDto subscribeDto = new SubscribeDto("1012345678", 999L, SubscribeType.BASIC);
         // when & then
         assertThatThrownBy(() -> subscribeService.unsubscribe(subscribeDto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("해당 채널이 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.INVALID_INPUT_VALUE_CHANNEL.getMessage());
     }
 
     @Test
@@ -153,8 +154,8 @@ class SubscribeServiceTest {
 
         // when & then
         assertThatThrownBy(() -> subscribeService.unsubscribe(subscribeDto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("채널의 권한이 없는 접근입니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.FORBIDDEN_CHANNEL.getMessage());
     }
 
     @Test
@@ -166,8 +167,8 @@ class SubscribeServiceTest {
 
         // when & then
         assertThatThrownBy(() -> subscribeService.unsubscribe(subscribeDto))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("구독 정보가 존재하지 않습니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.NOT_FOUND_SUBSCRIBE.getMessage());
     }
 
     @Test

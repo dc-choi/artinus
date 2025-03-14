@@ -5,6 +5,8 @@ import kr.co.artinus.api.channel.domain.enumerated.ChannelRole;
 import kr.co.artinus.api.subscribehistory.domain.entity.SubscribeHistory;
 import kr.co.artinus.api.subscribehistory.domain.enumerated.HistoryType;
 import kr.co.artinus.global.common.entity.BaseEntity;
+import kr.co.artinus.global.common.message.FailHttpMessage;
+import kr.co.artinus.global.exception.BusinessException;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
@@ -39,13 +41,13 @@ public class Channel extends BaseEntity {
             // 구독
             case SUBSCRIBE -> {
                 if (this.role != ChannelRole.EVERY && this.role != ChannelRole.SUBSCRIBE) {
-                    throw new IllegalStateException("채널의 권한이 없는 접근입니다.");
+                    throw new BusinessException(FailHttpMessage.FORBIDDEN_CHANNEL);
                 }
             }
             // 구독 취소
             case CANCEL -> {
                 if (this.role != ChannelRole.EVERY && this.role != ChannelRole.CANCEL) {
-                    throw new IllegalStateException("채널의 권한이 없는 접근입니다.");
+                    throw new BusinessException(FailHttpMessage.FORBIDDEN_CHANNEL);
                 }
             }
         }

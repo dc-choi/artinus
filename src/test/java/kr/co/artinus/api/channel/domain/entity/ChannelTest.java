@@ -1,8 +1,9 @@
 package kr.co.artinus.api.channel.domain.entity;
 
 import kr.co.artinus.api.channel.domain.enumerated.ChannelRole;
-import kr.co.artinus.api.subscribe.domain.enumerated.SubscribeType;
 import kr.co.artinus.api.subscribehistory.domain.enumerated.HistoryType;
+import kr.co.artinus.global.common.message.FailHttpMessage;
+import kr.co.artinus.global.exception.BusinessException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -50,8 +51,8 @@ class ChannelTest {
 
         // when & then
         assertThatThrownBy(() -> channel.checkRole(HistoryType.SUBSCRIBE))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("채널의 권한이 없는 접근입니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.FORBIDDEN_CHANNEL.getMessage());
     }
 
     @Test
@@ -94,7 +95,7 @@ class ChannelTest {
 
         // when & then
         assertThatThrownBy(() -> channel.checkRole(HistoryType.CANCEL))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("채널의 권한이 없는 접근입니다.");
+                .isInstanceOf(BusinessException.class)
+                .hasMessageContaining(FailHttpMessage.FORBIDDEN_CHANNEL.getMessage());
     }
 }

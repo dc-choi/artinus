@@ -2,6 +2,8 @@ package kr.co.artinus.api.member.domain.validator;
 
 import kr.co.artinus.api.member.domain.entity.Member;
 import kr.co.artinus.api.member.domain.persistence.MemberRepository;
+import kr.co.artinus.global.common.message.FailHttpMessage;
+import kr.co.artinus.global.exception.BusinessException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -12,6 +14,6 @@ public class MemberValidator {
 
     public Member validByPhone(String phone) {
         return memberRepository.findByPhone(phone)
-                .orElseThrow(() -> new IllegalStateException("해당 번호로 가입한 회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new BusinessException(FailHttpMessage.NOT_FOUND_MEMBER));
     }
 }

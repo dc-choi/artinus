@@ -6,6 +6,8 @@ import kr.co.artinus.api.subscribe.domain.enumerated.SubscribeType;
 import kr.co.artinus.api.subscribehistory.domain.entity.SubscribeHistory;
 import kr.co.artinus.api.subscribehistory.domain.enumerated.HistoryType;
 import kr.co.artinus.global.common.entity.BaseEntity;
+import kr.co.artinus.global.common.message.FailHttpMessage;
+import kr.co.artinus.global.exception.BusinessException;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.Comment;
@@ -45,12 +47,12 @@ public class Subscribe extends BaseEntity {
                 switch (this.type) {
                     case NONE, BASIC -> {
                         if (subscribeType == SubscribeType.NONE) {
-                            throw new IllegalStateException("구독을 취소할 수 없습니다.");
+                            throw new BusinessException(FailHttpMessage.BAD_REQUEST_SUBSCRIBE);
                         }
                     }
                     case PREMIUM -> {
                         if (subscribeType != SubscribeType.PREMIUM) {
-                            throw new IllegalStateException("구독 등급을 낮출 수 없습니다.");
+                            throw new BusinessException(FailHttpMessage.BAD_REQUEST_SUBSCRIBE);
                         }
                     }
                 }
@@ -60,15 +62,15 @@ public class Subscribe extends BaseEntity {
             // 일반 구독 -> 구독 안함
             case CANCEL -> {
                 switch (this.type) {
-                    case NONE -> throw new IllegalStateException("구독을 취소할 수 없습니다.");
+                    case NONE -> throw new BusinessException(FailHttpMessage.BAD_REQUEST_SUBSCRIBE);
                     case BASIC -> {
                         if (subscribeType != SubscribeType.NONE) {
-                            throw new IllegalStateException("구독 등급을 높일 수 없습니다.");
+                            throw new BusinessException(FailHttpMessage.BAD_REQUEST_SUBSCRIBE);
                         }
                     }
                     case PREMIUM -> {
                         if (subscribeType == SubscribeType.PREMIUM) {
-                            throw new IllegalStateException("구독 등급을 높일 수 없습니다.");
+                            throw new BusinessException(FailHttpMessage.BAD_REQUEST_SUBSCRIBE);
                         }
                     }
                 }
