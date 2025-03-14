@@ -58,12 +58,12 @@ public class SubscribeService {
                     return existingSubscribe;
                 })
                 // 구독 정보가 존재하지 않는 경우 새로 생성함.
-                .orElseGet(() -> subscribeRepository.save(
-                        Subscribe.builder()
-                                .type(subscribeDto.subscribeType())
-                                .member(member)
-                                .build()
-                ));
+                .orElseGet(() -> Subscribe.builder()
+                        .type(subscribeDto.subscribeType())
+                        .member(member)
+                        .build()
+                );
+        subscribeRepository.save(subscribe);
 
         SubscribeHistory subscribeHistory = SubscribeHistory.builder()
                 .type(HistoryType.SUBSCRIBE)
@@ -114,6 +114,7 @@ public class SubscribeService {
                 })
                 // 구독 정보가 존재하지 않는 경우 예외 발생
                 .orElseThrow(() -> new IllegalStateException("구독 정보가 존재하지 않습니다."));
+        subscribeRepository.save(subscribe);
 
         SubscribeHistory subscribeHistory = SubscribeHistory.builder()
                 .type(HistoryType.CANCEL)
