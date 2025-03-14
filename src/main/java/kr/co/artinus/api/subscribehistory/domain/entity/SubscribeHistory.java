@@ -1,10 +1,10 @@
-package kr.co.artinus.api.subscribe.history.domain.entity;
+package kr.co.artinus.api.subscribehistory.domain.entity;
 
 import jakarta.persistence.*;
 import kr.co.artinus.api.channel.domain.entity.Channel;
 import kr.co.artinus.api.member.domain.entity.Member;
 import kr.co.artinus.api.subscribe.domain.entity.Subscribe;
-import kr.co.artinus.api.subscribe.history.domain.enumerated.HistoryType;
+import kr.co.artinus.api.subscribehistory.domain.enumerated.HistoryType;
 import kr.co.artinus.global.common.entity.BaseEntity;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

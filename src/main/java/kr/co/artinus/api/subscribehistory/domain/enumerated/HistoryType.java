@@ -1,4 +1,4 @@
-package kr.co.artinus.api.subscribe.history.domain.enumerated;
+package kr.co.artinus.api.subscribehistory.domain.enumerated;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import kr.co.artinus.api.channel.domain.enumerated.ChannelRole;
-import kr.co.artinus.api.subscribe.history.domain.entity.SubscribeHistory;
+import kr.co.artinus.api.subscribehistory.domain.entity.SubscribeHistory;
 import kr.co.artinus.global.common.entity.BaseEntity;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
