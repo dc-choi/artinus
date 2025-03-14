@@ -1,5 +1,5 @@
 # 구독 서비스 관리 시스템
-구독 서비스의 가입 및 해지 기능을 구현한 백엔드 시스템입니다.
+구독 서비스 관리 기능을 구현한 백엔드 시스템입니다.
 
 1. ERD(Entity Relationship Diagram) - mermaid 형식으로 작성하여 시각적으로 표현
 2. 주요 엔티티에 대한 설명
@@ -19,9 +19,9 @@ erDiagram
     Member {
         Long id PK
         String phone
-        String name
         LocalDateTime createdAt
         LocalDateTime updatedAt
+        LocalDateTime deletedAt
     }
 
     Channel {
@@ -30,6 +30,7 @@ erDiagram
         ChannelRole role
         LocalDateTime createdAt
         LocalDateTime updatedAt
+        LocalDateTime deletedAt
     }
 
     Subscribe {
@@ -37,16 +38,20 @@ erDiagram
         SubscribeType type
         LocalDateTime createdAt
         LocalDateTime updatedAt
+        LocalDateTime deletedAt
     }
 
     SubscribeHistory {
         Long id PK
-        HistoryType historyType
+        HistoryType type
+        LocalDateTime changedAt
         LocalDateTime createdAt
+        LocalDateTime updatedAt
+        LocalDateTime deletedAt
     }
 
     Member ||--o{ Subscribe : has
-    Channel ||--o{ SubscribeHistory : contains
+    Channel ||--o{ SubscribeHistory : has
     Member ||--o{ SubscribeHistory : has
     Subscribe ||--o{ SubscribeHistory : has
 ```
@@ -133,6 +138,7 @@ erDiagram
 - **URL**: `/api/v1/subscribe/cancel`
 - **Method**: `POST`
 - **Description**: 구독 해지 API
+
 - **Request Body**:
 ```json
 {
@@ -227,13 +233,14 @@ erDiagram
 - **URL**: `/api/v1/subscribe-history`
 - **Method**: `GET`
 - **Description**: 구독 이력 조회 API
+
 - **Request Parameters**:
 ```http request
 GET /api/v1/subscribe-history?phone=1012345678
 ```
 `phone`은 구독 이력을 조회할 회원의 휴대폰 번호입니다.
 
-- **Response**:
+- **200 Success Response**:
 ```json
 {
   "content": [],
