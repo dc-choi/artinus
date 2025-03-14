@@ -1,88 +1,291 @@
-# ARTINUS Backend Developer (1~3년) 과제
+# 구독 서비스 관리 시스템
+구독 서비스의 가입 및 해지 기능을 구현한 백엔드 시스템입니다.
 
----
-## 과제내용
-- 회원 관리 시스템에서 구독 서비스의 가입 및 해지 기능을 구현합니다.
-- 구독 및 해지 시, 외부 API를 호출하여 응답에 따른 트랜잭션 처리를 포함합니다.
-- 구독 서비스의 가입 및 해지 채널은 여러 개가 될 수 있습니다.
-- 채널이란 구독 및 해지를 할 수 있는 창구를 의미합니다.
-- 회원의 채널별 구독일, 해지일을 관리해야 합니다.
+1. ERD(Entity Relationship Diagram) - mermaid 형식으로 작성하여 시각적으로 표현
+2. 주요 엔티티에 대한 설명
+3. API 명세서 (구독하기, 구독 해지, 구독 이력 조회)
+   - URL, 메소드, 요청/응답 형식
+   - 성공 및 실패 시나리오별 응답
+4. 비즈니스 규칙
+   - 구독 상태 변경 규칙
+   - 채널 권한에 따른 제약
+   - 외부 API 응답에 따른 처리 로직
 
----
-## 요구사항
-### 구현해야 할 API
-- 구독하기 API
-- 구독해지 API
-- 구독 이력 조회 API
-### 채널 타입
-- 구독, 해지 모두 가능한 채널
-- 구독만 가능한 채널
-- 해지만 가능한 채널
-### 회원의 구독 상태
-- 구독 안함
-- 일반 구독
-- 프리미엄 구독
-### 채널 예시
-- 구독 가능 채널: **홈페이지, 모바일앱, 네이버, SKT, KT, LGU+**
-- 해지 가능 채널: **홈페이지, 모바일앱, 콜센터, 채팅상담, 이메일**
-### 외부 API 호출 및 트랜잭션 처리
-- 구독하기 API 와 구독 해지 API 에는 외부 API 를 호출하고, 응답에 따라 트랜잭션 처리를 합니다.
-- 외부 API
-    ``` shell 
-    curl -X GET https://csrng.net/csrng/csrng.php?min=0&max=1 
-    ```
-    - 해당 API 는 `random` 필드를 0 과 1로 랜덤으로 응답합니다.
-- 응답 예시
-    ``` json
-    [ { "status": "success", "min": 0, "max": 1, "random": 1 } ]
-    ```
-- 응답 JSON의 random 값에 따른 처리
-    - `random = 1` → 정상적으로 트랜잭션을 커밋
-    - `random = 0` → 예외 발생 및 트랜잭션 롤백
+GitHub에서는 mermaid 다이어그램이 자동으로 렌더링되어 ERD를 시각적으로 확인할 수 있습니다.
 
-### 기타
-- 회원은 1개의 구독 상태를 가지며, 구독 및 해지를 여러 번 수행할 수 있습니다.
-- 구현한 API 에 대한 명세서를 작성해야 합니다.
-- 요구사항에 명시되지 않은 부분은 일반적인 구독 서비스의 동작을 참고하여 자유롭게 구현해주세요.
+## ERD (Entity Relationship Diagram)
+```mermaid
+erDiagram
+    Member {
+        Long id PK
+        String phone
+        String name
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
 
----
+    Channel {
+        Long id PK
+        String name
+        ChannelRole role
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
 
-## API 상세
+    Subscribe {
+        Long id PK
+        SubscribeType type
+        LocalDateTime createdAt
+        LocalDateTime updatedAt
+    }
+
+    SubscribeHistory {
+        Long id PK
+        HistoryType historyType
+        LocalDateTime createdAt
+    }
+
+    Member ||--o{ Subscribe : has
+    Channel ||--o{ SubscribeHistory : contains
+    Member ||--o{ SubscribeHistory : has
+    Subscribe ||--o{ SubscribeHistory : has
+```
+
+## API 명세서
+
 ### 구독하기 API
-- 휴대폰번호, 채널ID, 구독 상태를 입력 받습니다.
-- 최초 회원의 구독 상태는 구독 안함, 일반 구독, 프리미엄 구독 모두 허용됩니다.
-- 외부 API 호출 및 응답에 따른 처리를 포함합니다.
-- 구독 상태 변경 가능 규칙
-    - 구독 안함 → 일반 구독
-    - 구독 안함 → 프리미엄 구독
-    - 일반 구독 → 프리미엄 구독
+- **URL**: `/api/v1/subscribe`
+- **Method**: `POST`
+- **Description**: 구독하기 API
+- **Request Body**:
+```json
+{
+  "phone": "1012345678",
+  "channelId": 1,
+  "type": "BASIC"
+}
+```
+`type`은 구독 상태를 나타내며, `NONE` 또는 `BASIC` 또는 `PREMIUM` 중 하나로 설정할 수 있습니다.
 
-### 구독해지 API
-- 휴대폰번호, 채널ID, 구독 상태를 입력 받습니다.
-- 외부 API 호출 및 응답에 따른 처리를 포함합니다.
-- 구독 해지 상태 변경 가능 규칙
-    - 프리미엄 구독 → 일반 구독
-    - 프리미엄 구독 → 구독 안함
-    - 일반 구독 → 구독 안함
+- **200 Success Response**:
+```json
+{
+  "phone": "1012345678",
+  "channelId": 1,
+  "subscribeType": "BASIC"
+}
+```
+
+- **400 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes",
+  "message": "잘못된 채널 입력값 입니다.",
+  "timestamp": "2025-03-14T22:44:35.321782",
+  "error": null
+}
+```
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes",
+  "message": "잘못된 구독 변경입니다.",
+  "timestamp": "2025-03-14T22:44:35.321782",
+  "error": null
+}
+```
+
+- **403 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes",
+  "message": "구독할 수 없는 채널입니다.",
+  "timestamp": "2025-03-14T22:45:10.770594",
+  "error": null
+}
+```
+
+- **404 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes",
+  "message": "존재하지 않는 회원입니다.",
+  "timestamp": "2025-03-14T22:46:10.770594",
+  "error": null
+}
+```
+
+- **500 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes",
+  "message": "서버 에러 입니다.",
+  "timestamp": "2025-03-14T22:38:55.086638",
+  "error": null
+}
+```
+  
+### 구독 해지 API
+- **URL**: `/api/v1/subscribe/cancel`
+- **Method**: `POST`
+- **Description**: 구독 해지 API
+- **Request Body**:
+```json
+{
+  "phone": "1012345678",
+  "channelId": 1,
+  "type": "BASIC"
+}
+```
+`type`은 구독 상태를 나타내며, `NONE` 또는 `BASIC` 또는 `PREMIUM` 중 하나로 설정할 수 있습니다.
+
+- **Request Body**:
+```json
+{
+  "phone": "1012345678",
+  "channelId": 1,
+  "type": "BASIC"
+}
+```
+
+- **200 Success Response**:
+```json
+{
+  "phone": "1012345678",
+  "channelId": 1,
+  "subscribeType": "BASIC"
+}
+```
+
+- **400 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes/cancel",
+  "message": "잘못된 채널 입력값 입니다.",
+  "timestamp": "2025-03-14T22:44:35.321782",
+  "error": null
+}
+```
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes",
+  "message": "잘못된 구독 변경입니다.",
+  "timestamp": "2025-03-14T22:44:35.321782",
+  "error": null
+}
+```
+
+- **403 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes/cancel",
+  "message": "구독할 수 없는 채널입니다.",
+  "timestamp": "2025-03-14T22:45:10.770594",
+  "error": null
+}
+```
+
+- **404 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes/cancel",
+  "message": "존재하지 않는 회원입니다.",
+  "timestamp": "2025-03-14T22:46:10.770594",
+  "error": null
+}
+```
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes/cancel",
+  "message": "존재하지 않는 구독 정보입니다.",
+  "timestamp": "2025-03-14T22:46:10.770594",
+  "error": null
+}
+```
+
+- **500 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes/cancel",
+  "message": "서버 에러 입니다.",
+  "timestamp": "2025-03-14T22:38:55.086638",
+  "error": null
+}
+```
 
 ### 구독 이력 조회 API
-- 휴대폰번호를 입력 받습니다.
-- 휴대폰번호의 채널ID, 구독일자, 해지일자를 포함한 이력을 응답합니다.
+- **URL**: `/api/v1/subscribe-history`
+- **Method**: `GET`
+- **Description**: 구독 이력 조회 API
+- **Request Parameters**:
+```http request
+GET /api/v1/subscribe-history?phone=1012345678
+```
+`phone`은 구독 이력을 조회할 회원의 휴대폰 번호입니다.
 
----
+- **Response**:
+```json
+{
+  "content": [],
+  "page": {
+    "size": 20,
+    "number": 0,
+    "totalElements": 0,
+    "totalPages": 0
+  }
+}
+```
 
-## 제약사항
-- 개발 언어는 Java 를 사용해주세요.
-- 데이터베이스는 자유롭게 선택하세요.
-- 외부 라이브러리 사용에 제약이 없습니다.
-- 분석 및 구현 내용을 `readme.md` 파일에 정리해주세요.
-- 결과물은 GitHub public repository에 업로드 후 URL을 공유해주세요.
+- **404 Error Response**:
+```json
+{
+  "httpMethod": "POST",
+  "path": "/v1/subscribes/cancel",
+  "message": "존재하지 않는 회원입니다.",
+  "timestamp": "2025-03-14T22:46:10.770594",
+  "error": null
+}
+```
 
----
+## 비즈니스 규칙
 
-## 평가항목
-- 아키텍처 설계 및 프로젝트 구성
-- 요구사항 이해 및 구현
-- 유지보수 및 확장 용이성
-- 테스트코드 작성
-- 오류 및 예외 처리
+### 구독 상태 변경 규칙
+- 구독 안함 → 일반 구독
+- 구독 안함 → 프리미엄 구독
+- 일반 구독 → 프리미엄 구독
+
+### 구독 해지 상태 변경 규칙
+- 프리미엄 구독 → 일반 구독
+- 프리미엄 구독 → 구독 안함
+- 일반 구독 → 구독 안함
+
+### 채널 권한에 따른 제약
+- 구독 가능 채널
+  - 홈페이지, 모바일앱, 네이버, SKT, KT, LGU+
+- 구독 해지 가능 채널
+  - 홈페이지, 모바일앱, 콜센터, 채팅상담, 이메일 
+
+### 외부 API 응답에 따른 처리 로직
+- 외부 API 호출 및 응답에 따른 트랜잭션 처리
+- 외부 API 호출 예시
+```shell
+curl -X GET https://csrng.net/csrng/csrng.php?min=0&max=1
+```
+- 외부 API 응답 예시
+```json
+[ { "status": "success", "min": 0, "max": 1, "random": 1 } ]
+```
+- 외부 API 응답에 따른 처리
+  - `random = 1` → 정상적으로 트랜잭션을 커밋
+  - `random = 0` → 예외 발생 및 트랜잭션 롤백
+  - 구독하기 API와 구독 해지 API에 외부 API 호출 및 응답에 따른 트랜잭션 처리 포함
