@@ -43,7 +43,8 @@ public class GlobalExceptionHandler {
             NumberFormatException.class,
             MethodArgumentTypeMismatchException.class,
             InvalidFormatException.class,
-            IllegalArgumentException.class
+            IllegalArgumentException.class,
+            IllegalStateException.class
     })
     public ResponseEntity<ErrorResponse> handleBindException(MethodArgumentNotValidException e, HttpServletRequest request) {
         StringBuilder message = new StringBuilder();

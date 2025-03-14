@@ -22,4 +22,11 @@ public class SubscribeController {
 
         return ResponseEntity.ok().body(subscribe);
     }
+
+    @PostMapping("cancel")
+    public ResponseEntity<SubscribeDto> unsubscribe(@RequestBody @Valid SubscribeDto subscribeDto) {
+        SubscribeDto subscribe = subscribeService.unsubscribe(subscribeDto);
+
+        return ResponseEntity.ok().body(subscribe);
+    }
 }

@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import kr.co.artinus.api.member.domain.entity.Member;
 import kr.co.artinus.api.subscribe.domain.enumerated.SubscribeType;
 import kr.co.artinus.api.subscribehistory.domain.entity.SubscribeHistory;
+import kr.co.artinus.api.subscribehistory.domain.enumerated.HistoryType;
 import kr.co.artinus.global.common.entity.BaseEntity;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -35,22 +36,50 @@ public class Subscribe extends BaseEntity {
     @ToString.Exclude
     private List<SubscribeHistory> subscribeHistories = new ArrayList<>();
 
-    public void modifySubscribeType(SubscribeType type) {
-        // 구독 안함 -> 일반 구독, 구독 안함 -> 프리미엄 구독, 일반 구독 -> 프리미엄 구독
-        switch (this.type) {
-            case NONE -> {
-                if (type == SubscribeType.NONE) {
-                    throw new IllegalArgumentException("구독을 취소할 수 없습니다.");
+    public void modifySubscribeType(SubscribeType subscribeType, HistoryType historyType) {
+        switch (historyType) {
+            // 구독 안함 -> 일반 구독
+            // 구독 안함 -> 프리미엄 구독
+            // 일반 구독 -> 프리미엄 구독
+            case SUBSCRIBE -> {
+                switch (this.type) {
+                    case NONE, BASIC -> {
+                        if (subscribeType == SubscribeType.NONE) {
+                            throw new IllegalStateException("구독을 취소할 수 없습니다.");
+                        }
+                    }
+                    case PREMIUM -> {
+                        if (subscribeType != SubscribeType.PREMIUM) {
+                            throw new IllegalStateException("구독 등급을 낮출 수 없습니다.");
+                        }
+                    }
                 }
             }
-            case BASIC, PREMIUM -> {
-                if (type != SubscribeType.PREMIUM) {
-                    throw new IllegalArgumentException("구독 등급을 낮출 수 없습니다.");
+            // 프리미엄 구독 -> 일반 구독
+            // 프리미엄 구독 -> 구독 안함
+            // 일반 구독 -> 구독 안함
+            case CANCEL -> {
+                switch (this.type) {
+                    case NONE -> {
+                        if (subscribeType == SubscribeType.NONE) {
+                            throw new IllegalStateException("구독을 취소할 수 없습니다.");
+                        }
+                    }
+                    case BASIC -> {
+                        if (subscribeType != SubscribeType.NONE) {
+                            throw new IllegalStateException("구독 등급을 높일 수 없습니다.");
+                        }
+                    }
+                    case PREMIUM -> {
+                        if (subscribeType != SubscribeType.PREMIUM) {
+                            throw new IllegalStateException("구독 등급을 높일 수 없습니다.");
+                        }
+                    }
                 }
             }
         }
 
         // 구독 상태를 변경
-        this.type = type;
+        this.type = subscribeType;
     }
 }

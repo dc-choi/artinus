@@ -1,9 +1,6 @@
 package kr.co.artinus.api.channel.domain.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import kr.co.artinus.api.channel.domain.enumerated.ChannelRole;
 import kr.co.artinus.api.subscribehistory.domain.entity.SubscribeHistory;
 import kr.co.artinus.global.common.entity.BaseEntity;
@@ -27,6 +24,7 @@ public class Channel extends BaseEntity {
 
     @Comment("채널 권한")
     @Column(name = "role", columnDefinition = "VARCHAR(50)")
+    @Enumerated(EnumType.STRING)
     private ChannelRole role;
 
     @Builder.Default

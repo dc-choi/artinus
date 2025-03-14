@@ -19,6 +19,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -34,7 +36,7 @@ public class SubscribeService {
     public SubscribeDto subscribe(SubscribeDto subscribeDto) {
         // 회원이 존재하는지 확인
         Member member = memberRepository.findByPhone(subscribeDto.phone())
-                .orElseThrow(() -> new IllegalArgumentException("해당 번호로 가입한 회원이 존재하지 않습니다."));
+                .orElseThrow(() -> new IllegalStateException("해당 번호로 가입한 회원이 존재하지 않습니다."));
 
         Channel channel = channelRepository.findById(subscribeDto.channelId())
                 .map(existingChannel -> {
@@ -51,7 +53,7 @@ public class SubscribeService {
         Subscribe subscribe = subscribeRepository.findByMember(member)
                 // 구독 정보가 존재하는 경우 구독 타입을 변경함.
                 .map(existingSubscribe -> {
-                    existingSubscribe.modifySubscribeType(subscribeDto.subscribeType());
+                    existingSubscribe.modifySubscribeType(subscribeDto.subscribeType(), HistoryType.SUBSCRIBE);
 
                     return existingSubscribe;
                 })
@@ -65,7 +67,57 @@ public class SubscribeService {
 
         SubscribeHistory subscribeHistory = SubscribeHistory.builder()
                 .type(HistoryType.SUBSCRIBE)
-                .changedAt(subscribe.getCreatedAt())
+                .changedAt(LocalDateTime.now())
+                .member(member)
+                .channel(channel)
+                .subscribe(subscribe)
+                .build();
+
+        subscribeHistory.addChannel(channel);
+        subscribeHistory.addMember(member);
+        subscribeHistory.addSubscribe(subscribe);
+
+        // 구독 이력 저장
+        subscribeHistoryRepository.save(subscribeHistory);
+
+        List<GetRandomResponse> random = externalService.getRandom();
+        if (random.isEmpty()) throw new BusinessException(FailHttpMessage.INTERNAL_SERVER_ERROR);
+        if (random.getFirst().random() == 0) throw new BusinessException(FailHttpMessage.INTERNAL_SERVER_ERROR);
+
+        return subscribeDto;
+    }
+
+    @Transactional
+    public SubscribeDto unsubscribe(SubscribeDto subscribeDto) {
+        // 회원이 존재하는지 확인
+        Member member = memberRepository.findByPhone(subscribeDto.phone())
+                .orElseThrow(() -> new IllegalStateException("해당 번호로 가입한 회원이 존재하지 않습니다."));
+
+        Channel channel = channelRepository.findById(subscribeDto.channelId())
+                .map(existingChannel -> {
+                    // 채널 권한이 EVERY, CANCEL이면 구독 해지 가능
+                    if (existingChannel.getRole() != ChannelRole.EVERY && existingChannel.getRole() != ChannelRole.CANCEL) {
+                        throw new BusinessException(FailHttpMessage.FORBIDDEN);
+                    }
+
+                    return existingChannel;
+                })
+                // 채널이 없으면 예외 발생
+                .orElseThrow(() -> new IllegalStateException("해당 채널이 존재하지 않습니다."));
+
+        Subscribe subscribe = subscribeRepository.findByMember(member)
+                // 구독 정보가 존재하는 경우 구독 타입을 변경함.
+                .map(existingSubscribe -> {
+                    existingSubscribe.modifySubscribeType(subscribeDto.subscribeType(), HistoryType.CANCEL);
+
+                    return existingSubscribe;
+                })
+                // 구독 정보가 존재하지 않는 경우 예외 발생
+                .orElseThrow(() -> new IllegalStateException("구독 정보가 존재하지 않습니다."));
+
+        SubscribeHistory subscribeHistory = SubscribeHistory.builder()
+                .type(HistoryType.CANCEL)
+                .changedAt(LocalDateTime.now())
                 .member(member)
                 .channel(channel)
                 .subscribe(subscribe)
